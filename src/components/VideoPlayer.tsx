@@ -7,14 +7,13 @@ export default function VideoPlayer() {
   const searchParams = useSearchParams();
   const video = searchParams.get("video");
   const decodedVideo = video ? decodeURIComponent(video) : "";
-  const subtitle = searchParams.get("subtitle");
+  const subtitle = video?.replace(".mp4", "_en.srt");
   const decodedSubtitle = subtitle ? decodeURIComponent(subtitle) : "";
   const videoRef = useRef<HTMLVideoElement>(null);
   const [progress, setProgress] = useState(0);
 
-  
   useEffect(() => {
-    if (!videoRef.current) return;
+    if (!video || !videoRef.current) return;
 
     const savedProgress = localStorage.getItem(video || "");
     if (savedProgress && videoRef.current) {
@@ -42,19 +41,25 @@ export default function VideoPlayer() {
         width="100%"
         onTimeUpdate={() => setProgress(videoRef.current?.currentTime || 0)}
       >
-        <source
-          src={`/api/video?video=${encodeURIComponent(decodedVideo)}`}
-          type="video/mp4"
-        />
-        <track
-          label="English"
-          kind="subtitles"
-          srcLang="en"
-          src={`/api/subtitle?subtitle=${encodeURIComponent(decodedSubtitle)}`}
-          default
-        />
+        {video && (
+          <>
+            <source
+              src={`/api/video?video=${encodeURIComponent(decodedVideo)}`}
+              type="video/mp4"
+            />
+            <track
+              label="English"
+              kind="subtitles"
+              srcLang="en"
+              src={`/api/subtitle?subtitle=${encodeURIComponent(
+                decodedSubtitle
+              )}`}
+              default
+            />
+          </>
+        )}
       </video>
-      <p>Progress: {progress.toFixed(2)} seconds</p>
+      {video && <p>Progress: {progress.toFixed(2)} seconds</p>}
     </div>
   );
 }
